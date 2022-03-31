@@ -1,0 +1,9 @@
+:verbose: true
+:concurrency: 5
+production:
+  :concurrency: 5
+:queues:
+  - critical
+  - high
+  - default
+  - low

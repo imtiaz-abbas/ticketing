@@ -21,25 +21,25 @@ ActiveRecord::Schema[7.0].define(version: 2022_03_31_070052) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "knowhere_shows", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "knowman_shows", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.integer "status", null: false
     t.datetime "date", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["date"], name: "index_knowhere_shows_on_date", unique: true
+    t.index ["date"], name: "index_knowman_shows_on_date", unique: true
   end
 
   create_table "tickets", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.integer "ticket_number"
-    t.uuid "knowhere_show_id", null: false
+    t.integer "ticket_number", null: false
+    t.uuid "knowman_show_id", null: false
     t.uuid "buyer_id"
     t.integer "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["buyer_id"], name: "index_tickets_on_buyer_id"
-    t.index ["knowhere_show_id"], name: "index_tickets_on_knowhere_show_id"
+    t.index ["knowman_show_id"], name: "index_tickets_on_knowman_show_id"
   end
 
   add_foreign_key "tickets", "buyers"
-  add_foreign_key "tickets", "knowhere_shows"
+  add_foreign_key "tickets", "knowman_shows"
 end

@@ -6,5 +6,5 @@
 #   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
 #   Character.create(name: "Luke", movie: movies.first)
 
-KnowhereShow.all.map do |x| x.delete end
-KnowhereShow.create
+KnowmanShow.all.map do |x| x.delete end
+KnowmanShow.create
