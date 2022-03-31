@@ -8,3 +8,6 @@
 
 KnowmanShow.all.map do |x| x.delete end
 KnowmanShow.create
+Ticket.sold.map do |x| x.update(status: "available", buyer: nil) end
+Buyer.all.map do |x| x.delete end
+Buyer.all.map do |x| x.name + " " + x.tickets.map do |y| y.ticket_number.to_s + ", " end.join end
