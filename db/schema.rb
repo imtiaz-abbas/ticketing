@@ -19,6 +19,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_03_31_070052) do
     t.string "phone", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["name", "phone"], name: "index_buyers_on_name_and_phone", unique: true
   end
 
   create_table "shows", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

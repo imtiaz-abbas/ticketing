@@ -5,10 +5,6 @@ class Show < ApplicationRecord
   before_create :setup_show_date
   after_create_commit :enqueue_ticket_creation_jobs
 
-  def book_tickets_exp
-    BookTicketsJob.perform_later(self.id, 5, (0...5).map { (65 + rand(26)).chr }.join, (0...9).map { (rand(10)) }.join)
-  end
-
   protected
 
   def setup_show_date

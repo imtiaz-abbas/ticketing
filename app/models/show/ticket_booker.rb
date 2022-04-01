@@ -56,15 +56,17 @@ class Show::TicketBooker
     name = book_tickets_attributes[:name]
     phone = book_tickets_attributes[:phone]
     ticket_count = book_tickets_attributes[:ticket_count]
-    buyer = Buyer.create(name: name, phone: phone)
-    Ticket.transaction do
-      tickets_to_be_sold = self.show.tickets.available.order(:ticket_number).limit(ticket_count)
-      tickets_to_be_sold.lock.map do |ticket| # lock ensure no other thread updates these tickets
-        # sleep(0.1) # delay to encounter concurrency problems
-        ticket.update(buyer: buyer, status: :sold)
+    Buyer.transaction do
+      buyer = Buyer.create(name: name, phone: phone)
+      Ticket.transaction do
+        tickets_to_be_sold = self.show.tickets.available.order(:ticket_number).limit(ticket_count)
+        tickets_to_be_sold.lock.map do |ticket| # lock ensure no other thread updates these tickets
+          # sleep(0.1) # delay to encounter concurrency problems
+          ticket.update(buyer: buyer, status: :sold)
+        end
       end
+      self.tickets = buyer.tickets
     end
-    self.tickets = buyer.tickets
     return true
   end
 

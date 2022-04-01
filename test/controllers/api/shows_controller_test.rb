@@ -1,4 +1,5 @@
 require "test_helper"
+require "thread/pool"
 
 class Api::ShowsControllerTest < ActionDispatch::IntegrationTest
   setup do
@@ -84,8 +85,12 @@ class Api::ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, show.tickets.sold.count
 
     list = 1.upto(200)
-    threads = list.map do |number|
-      Thread.new do
+
+    # threadpool should be less than db max connections.
+    pool = Thread.pool(9)
+
+    list.map do |number|
+      pool.process {
         user_name = "user_name_" + number.to_s
         phone = "+9199999999" + number.to_s
         post "/api/shows/" + show.id + "/book_tickets", params: {
@@ -94,12 +99,14 @@ class Api::ShowsControllerTest < ActionDispatch::IntegrationTest
                                                           phone: phone,
                                                         }, headers: {}, as: :json
         assert_response :success
-        JSON.parse(response.body)
-      end
+        body = JSON.parse(response.body)
+        assert_response 5, body["data"].count
+      }
     end
-    threads.each(&:join)
-    sleep(0.5)
-    buyers = Buyer.all.order(:phone)
+
+    pool.shutdown
+
+    buyers = Buyer.all
     # x = buyers.map do |x| x.name + " " + x.phone + " " + x.tickets.map do |y| y.ticket_number.to_s + ", " end.join end
     # x.each do |x|
     #   puts(x)
