@@ -89,7 +89,7 @@ class Api::ShowsControllerTest < ActionDispatch::IntegrationTest
         user_name = "user_name_" + number.to_s
         phone = "+9199999999" + number.to_s
         post "/api/shows/" + show.id + "/book_tickets", params: {
-                                                          ticket_count: 6,
+                                                          ticket_count: 10,
                                                           name: user_name,
                                                           phone: phone,
                                                         }, headers: {}, as: :json
@@ -105,12 +105,12 @@ class Api::ShowsControllerTest < ActionDispatch::IntegrationTest
     #   puts(x)
     # end
     show.reload
-    assert_equal 400, show.tickets.available.count
-    assert_equal 600, show.tickets.sold.count
+    assert_equal 0, show.tickets.available.count
+    assert_equal 1000, show.tickets.sold.count
     assert_equal 100, buyers.count
 
     buyers.each do |x|
-      assert_equal 6, x.tickets.count
+      assert_equal 10, x.tickets.count
     end
   end
 end
