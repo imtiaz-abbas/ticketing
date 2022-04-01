@@ -71,7 +71,7 @@ class Api::ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "ticket Tickets sold out", body["data"][0]["messages"][0]
   end
 
-  test "should sucessfully book tickets concurrently" do
+  test "should sucessfully book 1000 tickets using 200 requests concurrently" do
     travel 1.day
     show = Show.create
     assert_not_nil show
@@ -83,22 +83,22 @@ class Api::ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1000, show.tickets.available.count
     assert_equal 0, show.tickets.sold.count
 
-    list = 1.upto(100)
+    list = 1.upto(200)
     threads = list.map do |number|
       Thread.new do
         user_name = "user_name_" + number.to_s
         phone = "+9199999999" + number.to_s
         post "/api/shows/" + show.id + "/book_tickets", params: {
-                                                          ticket_count: 10,
+                                                          ticket_count: 5,
                                                           name: user_name,
                                                           phone: phone,
                                                         }, headers: {}, as: :json
         assert_response :success
-        sleep(1)
+        JSON.parse(response.body)
       end
     end
     threads.each(&:join)
-    sleep(1)
+    sleep(0.5)
     buyers = Buyer.all.order(:phone)
     # x = buyers.map do |x| x.name + " " + x.phone + " " + x.tickets.map do |y| y.ticket_number.to_s + ", " end.join end
     # x.each do |x|
@@ -107,10 +107,10 @@ class Api::ShowsControllerTest < ActionDispatch::IntegrationTest
     show.reload
     assert_equal 0, show.tickets.available.count
     assert_equal 1000, show.tickets.sold.count
-    assert_equal 100, buyers.count
+    assert_equal 200, buyers.count
 
     buyers.each do |x|
-      assert_equal 10, x.tickets.count
+      assert_equal 5, x.tickets.count
     end
   end
 end
