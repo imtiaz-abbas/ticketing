@@ -76,25 +76,25 @@ class Api::ShowsControllerTest < ActionDispatch::IntegrationTest
     show = Show.create
     assert_not_nil show
 
-    1.upto(250) do |number|
+    1.upto(1000) do |number|
       show.tickets.create(ticket_number: number)
     end
 
-    assert_equal 250, show.tickets.available.count
+    assert_equal 1000, show.tickets.available.count
     assert_equal 0, show.tickets.sold.count
 
-    list = 1.upto(40)
+    list = 1.upto(100)
     threads = list.map do |number|
       Thread.new do
         user_name = "user_name_" + number.to_s
         phone = "+9199999999" + number.to_s
         post "/api/shows/" + show.id + "/book_tickets", params: {
-                                                          ticket_count: 5,
+                                                          ticket_count: 6,
                                                           name: user_name,
                                                           phone: phone,
                                                         }, headers: {}, as: :json
         assert_response :success
-        sleep(0.2)
+        sleep(1)
       end
     end
     threads.each(&:join)
@@ -105,12 +105,12 @@ class Api::ShowsControllerTest < ActionDispatch::IntegrationTest
     #   puts(x)
     # end
     show.reload
-    assert_equal 50, show.tickets.available.count
-    assert_equal 200, show.tickets.sold.count
-    assert_equal 40, buyers.count
+    assert_equal 400, show.tickets.available.count
+    assert_equal 600, show.tickets.sold.count
+    assert_equal 100, buyers.count
 
     buyers.each do |x|
-      assert_equal 5, x.tickets.count
+      assert_equal 6, x.tickets.count
     end
   end
 end
