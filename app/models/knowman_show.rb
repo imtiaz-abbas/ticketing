@@ -17,8 +17,8 @@ class KnowmanShow < ApplicationRecord
         buyer = Buyer.create(name: buyer_name, phone: buyer_phone)
         Ticket.transaction do
           tickets_to_be_sold = self.tickets.available.order(:ticket_number).limit(number_of_tickets)
-          tickets_to_be_sold.lock.map do |ticket| # lock ensure no other thread updates these tickets
-            sleep(1) # delay to encounter concurrency problems
+          tickets_to_be_sold.map do |ticket| # lock ensure no other thread updates these tickets
+            # sleep(0.1) # delay to encounter concurrency problems
             ticket.update(buyer: buyer, status: :sold)
           end
         end
