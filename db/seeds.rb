@@ -6,8 +6,8 @@
 #   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
 #   Character.create(name: "Luke", movie: movies.first)
 
-KnowmanShow.all.map do |x| x.delete end
-KnowmanShow.create
+Show.all.map do |x| x.delete end
+Show.create
 Ticket.sold.map do |x| x.update(status: "available", buyer: nil) end
 Buyer.all.map do |x| x.delete end
 Buyer.all.map do |x| x.name + " " + x.tickets.map do |y| y.ticket_number.to_s + ", " end.join end

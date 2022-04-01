@@ -5,4 +5,14 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "articles#index"
   mount Sidekiq::Web => "/sidekiq"
+
+  namespace :api do
+    defaults format: :json do
+      resources :shows, only: [:index] do
+        member do
+          post :book_tickets
+        end
+      end
+    end
+  end
 end
