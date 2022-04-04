@@ -120,4 +120,56 @@ class Api::ShowsControllerTest < ActionDispatch::IntegrationTest
       assert_equal 5, x.tickets.count
     end
   end
+
+  test "should try to book more tickets than available concurrently" do
+    travel 1.day
+    show = Show.create
+    assert_not_nil show
+
+    1.upto(1000) do |number|
+      show.tickets.create(ticket_number: number)
+    end
+
+    assert_equal 1000, show.tickets.available.count
+    assert_equal 0, show.tickets.sold.count
+
+    # 500 buyers trying to book 5 tickets each. 
+    list = 1.upto(500)
+
+    # threadpool should be less than db max connections.
+    pool = Thread.pool(9)
+    sold_out_failure_count = 0
+
+    list.map do |number|
+      pool.process {
+        user_name = "user_name_" + number.to_s
+        phone = "+9199999999" + number.to_s
+        post "/api/shows/" + show.id + "/book_tickets", params: {
+                                                          ticket_count: 5,
+                                                          name: user_name,
+                                                          phone: phone,
+                                                        }, headers: {}, as: :json
+              
+        body = JSON.parse(response.body)
+        if body["status"] == "failure" 
+          if body["data"][0]["messages"][0] == "ticket Tickets sold out"
+            sold_out_failure_count += 1
+          end
+        end
+      }
+    end
+
+    pool.shutdown
+
+    buyers = Buyer.all
+    show.reload
+    assert_equal 0, show.tickets.available.count
+    assert_equal 1000, show.tickets.sold.count
+    assert_equal 200, buyers.count
+    assert_equal 300, sold_out_failure_count
+
+    buyers.each do |x|
+      assert_equal 5, x.tickets.count
+    end
+  end
 end
